@@ -11,6 +11,14 @@ export const metadata: Metadata = {
   title: pageTitle,
   description: pageDescription,
   applicationName: "Pakpol — Verifikasi Tautan",
+  manifest: "/site.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.svg",
+    // Apple devices generally expect a PNG touch icon; keep the SVG favicon as fallback.
+  },
   alternates: {
     canonical: "/",
   },
