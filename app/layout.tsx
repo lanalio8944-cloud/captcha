@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Verifikasi keamanan",
-  description: "Selesaikan verifikasi sebelum melanjutkan ke situs tujuan.",
+  title: "Pakpol | Verifikasi tautan",
+  description: "Selesaikan verifikasi keamanan singkat untuk melanjutkan ke tautan.",
   robots: { index: false, follow: false },
 };
 
