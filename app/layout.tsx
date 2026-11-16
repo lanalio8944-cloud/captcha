@@ -1,10 +1,41 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+const siteUrl = new URL("https://www.pakpol.web.id");
+const pageTitle = "Verifikasi Keamanan Tautan | Pakpol";
+const pageDescription =
+  "Halaman verifikasi keamanan Pakpol. Selesaikan pemeriksaan singkat sebelum melanjutkan melalui tautan.";
+
 export const metadata: Metadata = {
-  title: "Pakpol | Verifikasi tautan",
-  description: "Selesaikan verifikasi keamanan singkat untuk melanjutkan ke tautan.",
-  robots: { index: false, follow: false },
+  metadataBase: siteUrl,
+  title: pageTitle,
+  description: pageDescription,
+  applicationName: "Pakpol — Verifikasi Tautan",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    url: "/",
+    siteName: "Pakpol",
+    title: pageTitle,
+    description: pageDescription,
+  },
+  twitter: {
+    card: "summary",
+    title: pageTitle,
+    description: pageDescription,
+  },
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+    },
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
