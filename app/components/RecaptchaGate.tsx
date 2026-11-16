@@ -25,6 +25,15 @@ declare global {
 
 type Props = { siteKey: string; disabled?: boolean };
 
+const adUnitMarkup = `<!-- BEGIN AADS AD UNIT 2462330 -->
+
+<div id="frame" style="width: 100%;margin: auto;position: relative; z-index: 99998;">
+          <iframe data-aa='2462330' src='//acceptable.a-ads.com/2462330/?size=Adaptive&background_color=E5F2EB&title_color=176B50&title_hover_color=23966D&text_color=35443D&link_color=16845E&link_hover_color=105B42'
+                            style='border:0; padding:0; width:70%; height:auto; overflow:hidden;display: block;margin: auto'></iframe>
+        </div>
+
+<!-- END AADS AD UNIT 2462330 -->`;
+
 export default function RecaptchaGate({ siteKey, disabled = false }: Props) {
   const widgetContainer = useRef<HTMLDivElement>(null);
   const widgetId = useRef<number | null>(null);
@@ -146,6 +155,11 @@ export default function RecaptchaGate({ siteKey, disabled = false }: Props) {
           Lanjutkan ke situs utama <span className="button-arrow" aria-hidden="true">→</span>
         </button>
       )}
+
+      <section className="ad-placement" aria-label="Iklan">
+        <span className="ad-label">IKLAN</span>
+        <div dangerouslySetInnerHTML={{ __html: adUnitMarkup }} />
+      </section>
 
       {message && <p className={`form-message${verified ? " success-message" : ""}`} role="status" aria-live="polite">{message}</p>}
       {scriptError && !verified && <>

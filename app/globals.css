@@ -65,6 +65,12 @@ h1 { margin: 18px 0 10px; font-family: "Manrope", sans-serif; font-size: clamp(3
 .reload-button { justify-self: start; margin-top: 10px; padding: 9px 13px; border: 1px solid #cbd8d0; border-radius: 9px; color: var(--green-dark); background: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
 .reload-button:hover { background: var(--green-pale); }
 .setup-notice { margin: 24px 0 0; padding: 13px 15px; border: 1px solid #f0d7b4; border-radius: 10px; color: #875923; background: #fffaf1; font-size: 13px; line-height: 1.6; }
+
+.ad-placement { width: 100%; margin: 22px auto 4px; padding-top: 16px; border-top: 1px solid var(--line); }
+.ad-label { display: block; width: min(100%, 468px); margin: 0 auto 8px; color: var(--soft); font-size: 9px; font-weight: 700; letter-spacing: .14em; }
+.ad-placement #frame { width: 100% !important; max-width: 468px; margin: 0 auto !important; }
+.ad-placement #frame iframe { display: block; width: 100% !important; max-width: 100%; min-height: 90px; margin: 0 auto !important; }
+
 .card-footer { display: flex; align-items: center; gap: 8px; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--soft); font-size: 11px; }
 .footer-lock { width: 15px; height: 15px; display: inline-flex; flex: 0 0 15px; }
 .footer-lock svg { width: 15px; height: 15px; }
@@ -81,6 +87,8 @@ h1 { margin: 18px 0 10px; font-family: "Manrope", sans-serif; font-size: clamp(3
   .verification-flow { margin-top: 28px; }
   .card-footer { margin-top: 24px; }
   .page-footer { min-height: 58px; font-size: 10px; }
+  .ad-placement { margin-top: 18px; padding-top: 13px; }
+  .ad-placement #frame iframe { min-height: 90px; }
 }
 
 @media (max-width: 360px) {
