@@ -11,12 +11,15 @@ type RecaptchaParameters = {
   tabindex: number;
 };
 
+type RecaptchaApi = {
+  ready: (callback: () => void) => void;
+  render: (container: HTMLElement, parameters: RecaptchaParameters) => number;
+  reset: (widgetId?: number) => void;
+};
+
 declare global {
   interface Window {
-    grecaptcha?: {
-      render: (container: HTMLElement, parameters: RecaptchaParameters) => number;
-      reset: (widgetId?: number) => void;
-    };
+    grecaptcha?: RecaptchaApi;
   }
 }
 
@@ -26,6 +29,7 @@ export default function RecaptchaGate({ siteKey, disabled = false }: Props) {
   const widgetContainer = useRef<HTMLDivElement>(null);
   const widgetId = useRef<number | null>(null);
   const [scriptReady, setScriptReady] = useState(false);
+  const [widgetReady, setWidgetReady] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
   const [verified, setVerified] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -41,31 +45,43 @@ export default function RecaptchaGate({ siteKey, disabled = false }: Props) {
   }, []);
 
   useEffect(() => {
-    if (!scriptReady || !widgetContainer.current || !window.grecaptcha || widgetId.current !== null) return;
+    const recaptcha = window.grecaptcha;
+    if (!scriptReady || !widgetContainer.current || !recaptcha || widgetId.current !== null) return;
 
-    try {
-      widgetId.current = window.grecaptcha.render(widgetContainer.current, {
-        sitekey: siteKey,
-        tabindex: 0,
-        callback: (token) => {
-          setCaptchaToken(token);
-          setMessage("");
-        },
-        "expired-callback": () => {
-          setCaptchaToken("");
-          setVerified(false);
-          setMessage("Waktu verifikasi habis. Silakan centang ulang.");
-        },
-        "error-callback": () => {
-          setCaptchaToken("");
-          setVerified(false);
-          setMessage("Verifikasi tidak dapat dimuat. Periksa koneksi atau pengaturan domain CAPTCHA.");
-        },
-      });
-    } catch {
-      setScriptError(true);
-      setMessage("Widget verifikasi tidak dapat dimulai. Periksa Site Key dan domain yang terdaftar.");
-    }
+    let cancelled = false;
+    recaptcha.ready(() => {
+      if (cancelled || !widgetContainer.current || widgetId.current !== null) return;
+
+      try {
+        widgetId.current = recaptcha.render(widgetContainer.current, {
+          sitekey: siteKey,
+          tabindex: 0,
+          callback: (token) => {
+            setCaptchaToken(token);
+            setMessage("");
+            setScriptError(false);
+          },
+          "expired-callback": () => {
+            setCaptchaToken("");
+            setVerified(false);
+            setMessage("Waktu verifikasi habis. Silakan centang ulang.");
+          },
+          "error-callback": () => {
+            setCaptchaToken("");
+            setVerified(false);
+            setWidgetReady(false);
+            setScriptError(true);
+            setMessage("Widget verifikasi tidak dapat dimuat. Silakan muat ulang halaman. Jika masalah berulang, periksa Site Key reCAPTCHA v2 Checkbox dan hostname yang terdaftar.");
+          },
+        });
+        setWidgetReady(true);
+      } catch {
+        setScriptError(true);
+        setMessage("Widget verifikasi tidak dapat dimulai. Silakan muat ulang halaman. Jika masalah berulang, periksa Site Key reCAPTCHA v2 Checkbox dan hostname yang terdaftar.");
+      }
+    });
+
+    return () => { cancelled = true; };
   }, [scriptReady, siteKey]);
 
   async function handleVerify() {
@@ -98,6 +114,10 @@ export default function RecaptchaGate({ siteKey, disabled = false }: Props) {
     if (verified) window.location.assign("/r");
   }
 
+  function reloadPage() {
+    window.location.reload();
+  }
+
   return (
     <div className="verification-flow">
       <div className="flow-heading">
@@ -113,6 +133,7 @@ export default function RecaptchaGate({ siteKey, disabled = false }: Props) {
       {!verified && <>
         <div className="captcha-viewport" aria-label="Google reCAPTCHA">
           <div className="captcha-container" ref={widgetContainer} />
+          {!widgetReady && !scriptError && <p className="widget-loading" role="status">Memuat verifikasi…</p>}
         </div>
         <button className="primary-button" type="button" onClick={() => void handleVerify()} disabled={disabled || busy || !captchaToken}>
           {busy ? <><span className="button-spinner" aria-hidden="true" /> Memeriksa…</> : "Verifikasi dan lanjutkan"}
@@ -127,7 +148,10 @@ export default function RecaptchaGate({ siteKey, disabled = false }: Props) {
       )}
 
       {message && <p className={`form-message${verified ? " success-message" : ""}`} role="status" aria-live="polite">{message}</p>}
-      {scriptError && <p className="form-hint">Jika masalah berlanjut, pastikan key yang digunakan adalah reCAPTCHA v2 Checkbox dan hostname telah didaftarkan di Google.</p>}
+      {scriptError && !verified && <>
+        <p className="form-hint">Jika pemuatan pertama gagal, muat ulang halaman. Jika pesan jenis kunci tidak valid tetap muncul, buat atau gunakan key reCAPTCHA v2 Checkbox dan daftarkan hostname situs ini di Google.</p>
+        <button className="reload-button" type="button" onClick={reloadPage}>Muat ulang halaman</button>
+      </>}
 
       <Script
         src="https://www.google.com/recaptcha/api.js?render=explicit&hl=id"
@@ -135,7 +159,7 @@ export default function RecaptchaGate({ siteKey, disabled = false }: Props) {
         onReady={() => setScriptReady(true)}
         onError={() => {
           setScriptError(true);
-          setMessage("Skrip Google reCAPTCHA gagal dimuat. Periksa koneksi atau pemblokir konten.");
+          setMessage("Skrip Google reCAPTCHA gagal dimuat. Silakan muat ulang halaman atau periksa koneksi dan pemblokir konten.");
         }}
       />
     </div>
