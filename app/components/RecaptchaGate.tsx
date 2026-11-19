@@ -23,7 +23,11 @@ declare global {
   }
 }
 
-type Props = { siteKey: string; disabled?: boolean; destinationId?: string };
+type Props = {
+  siteKey: string;
+  disabled?: boolean;
+  destinationId?: string;
+};
 
 export default function RecaptchaGate({ siteKey, disabled = false, destinationId }: Props) {
   const widgetContainer = useRef<HTMLDivElement>(null);
@@ -71,13 +75,13 @@ export default function RecaptchaGate({ siteKey, disabled = false, destinationId
             setVerified(false);
             setWidgetReady(false);
             setScriptError(true);
-            setMessage("Widget verifikasi tidak dapat dimuat. Silakan muat ulang halaman.");
+            setMessage("Widget verifikasi tidak dapat dimuat. Silakan muat ulang halaman. Jika masalah berulang, periksa Site Key reCAPTCHA v2 Checkbox dan hostname yang terdaftar.");
           },
         });
         setWidgetReady(true);
       } catch {
         setScriptError(true);
-        setMessage("Widget verifikasi tidak dapat dimulai. Silakan muat ulang halaman.");
+        setMessage("Widget verifikasi tidak dapat dimulai. Silakan muat ulang halaman. Jika masalah berulang, periksa Site Key reCAPTCHA v2 Checkbox dan hostname yang terdaftar.");
       }
     });
 
@@ -93,11 +97,17 @@ export default function RecaptchaGate({ siteKey, disabled = false, destinationId
       const response = await fetch("/api/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: captchaToken, destinationId: destinationId ?? null }),
+        body: JSON.stringify({
+          token: captchaToken,
+          destinationId: destinationId ?? null,
+        }),
         cache: "no-store",
       });
+
       const data = await response.json() as { success?: boolean; error?: string };
-      if (!response.ok || data.success !== true) throw new Error(data.error || "Verifikasi belum berhasil. Silakan coba lagi.");
+      if (!response.ok || data.success !== true) {
+        throw new Error(data.error || "Verifikasi belum berhasil. Silakan coba lagi.");
+      }
 
       setVerified(true);
       setCaptchaToken("");
@@ -130,28 +140,33 @@ export default function RecaptchaGate({ siteKey, disabled = false, destinationId
         </div>
       </div>
 
-      {!verified && <>
-        <div className="captcha-viewport" aria-label="Google reCAPTCHA">
-          <div className="captcha-container" ref={widgetContainer} />
-          {!widgetReady && !scriptError && <p className="widget-loading" role="status">Memuat verifikasi…</p>}
-        </div>
-        <button className="primary-button" type="button" onClick={() => void handleVerify()} disabled={disabled || busy || !captchaToken}>
-          {busy ? <><span className="button-spinner" aria-hidden="true" /> Memeriksa…</> : "Verifikasi dan lanjutkan"}
-          {!busy && <span className="button-arrow" aria-hidden="true">→</span>}
-        </button>
-      </>}
+      {!verified && (
+        <>
+          <div className="captcha-viewport" aria-label="Google reCAPTCHA">
+            <div className="captcha-container" ref={widgetContainer} />
+            {!widgetReady && !scriptError && <p className="widget-loading" role="status">Memuat verifikasi…</p>}
+          </div>
+          <button className="primary-button" type="button" onClick={() => void handleVerify()} disabled={disabled || busy || !captchaToken}>
+            {busy ? <><span className="button-spinner" aria-hidden="true" /> Memeriksa…</> : "Verifikasi dan lanjutkan"}
+            {!busy && <span className="button-arrow" aria-hidden="true">→</span>}
+          </button>
+        </>
+      )}
 
       {verified && (
         <button className="primary-button continue-button" type="button" onClick={continueToSite}>
-          Lanjutkan ke situs utama <span className="button-arrow" aria-hidden="true">→</span>
+          Lanjutkan ke situs tujuan <span className="button-arrow" aria-hidden="true">→</span>
         </button>
       )}
 
       {message && <p className={`form-message${verified ? " success-message" : ""}`} role="status" aria-live="polite">{message}</p>}
-      {scriptError && !verified && <>
-        <p className="form-hint">Jika pemuatan pertama gagal, muat ulang halaman.</p>
-        <button className="reload-button" type="button" onClick={reloadPage}>Muat ulang halaman</button>
-      </>}
+
+      {scriptError && !verified && (
+        <>
+          <p className="form-hint">Jika pemuatan pertama gagal, muat ulang halaman.</p>
+          <button className="reload-button" type="button" onClick={reloadPage}>Muat ulang halaman</button>
+        </>
+      )}
 
       <Script
         src="https://www.google.com/recaptcha/api.js?render=explicit&hl=id"

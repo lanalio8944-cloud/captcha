@@ -21,10 +21,17 @@ type RecaptchaResponse = {
   "error-codes"?: string[];
 };
 
+function json(body: unknown, status: number, extraHeaders?: Record<string, string>) {
+  return NextResponse.json(body, {
+    status,
+    headers: { "Cache-Control": "no-store", ...extraHeaders },
+  });
+}
+
 export async function POST(request: Request) {
   if (!isSameOrigin(request)) return json({ error: "Permintaan tidak valid." }, 403);
 
-  const siteSecret = process.env.RECAPTCHA_SECRET_KEY;
+  const siteSecret = process.env.RECAPTCHA_SECRET_KEY?.trim();
   const allowedHostnames = (process.env.RECAPTCHA_ALLOWED_HOSTNAMES ?? "")
     .split(",")
     .map((hostname) => hostname.trim().toLowerCase())
@@ -33,7 +40,7 @@ export async function POST(request: Request) {
   if (!siteSecret || allowedHostnames.length === 0) {
     return json({ error: "Layanan CAPTCHA belum dikonfigurasi." }, 503);
   }
-  if (!process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY) {
+  if (!process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY?.trim()) {
     return json({ error: "Site Key reCAPTCHA belum dikonfigurasi." }, 503);
   }
   if (!process.env.SESSION_SECRET || Buffer.byteLength(process.env.SESSION_SECRET, "utf8") < 32) {
@@ -81,11 +88,4 @@ export async function POST(request: Request) {
 
 export async function GET() {
   return json({ error: "Metode tidak diizinkan." }, 405, { Allow: "POST" });
-}
-
-function json(body: unknown, status: number, extraHeaders?: Record<string, string>) {
-  return NextResponse.json(body, {
-    status,
-    headers: { "Cache-Control": "no-store", ...extraHeaders },
-  });
 }

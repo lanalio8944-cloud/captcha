@@ -14,7 +14,7 @@ function ShieldIcon() {
 
 export default function HomePage() {
   const destination = getRedirectDestination();
-  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY?.trim() || null;
 
   return (
     <main className="page-shell">
@@ -35,15 +35,19 @@ export default function HomePage() {
         <h1 id="page-title">Satu langkah lagi.</h1>
         <p className="intro">Selesaikan verifikasi singkat di bawah ini untuk melanjutkan dengan aman.</p>
 
-        {!destination && (
-          <p className="setup-notice" role="status">Layanan belum siap. Silakan coba lagi nanti.</p>
-        )}
+        {destination ? (
+          <p className="destination-preview">
+            Tujuan lama: <strong>{destination.hostname}</strong>
+          </p>
+        ) : null}
 
         {siteKey && destination ? (
-          <RecaptchaGate siteKey={siteKey} />
-        ) : !siteKey ? (
-          <p className="setup-notice" role="status">Verifikasi belum tersedia saat ini. Silakan coba lagi nanti.</p>
-        ) : null}
+          <RecaptchaGate siteKey={siteKey} disabled={!destination} />
+        ) : (
+          <p className="setup-notice" role="status">
+            {!destination ? "Layanan belum siap. Silakan coba lagi nanti." : "Verifikasi belum tersedia saat ini. Silakan coba lagi nanti."}
+          </p>
+        )}
 
         <div className="card-footer">
           <span className="footer-lock" aria-hidden="true">
