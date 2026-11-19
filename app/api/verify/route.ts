@@ -84,8 +84,8 @@ export async function GET() {
 }
 
 function json(body: unknown, status: number, extraHeaders?: Record<string, string>) {
-  return NextResponse.json({
-    body,
+  return NextResponse.json(body, {
     status,
-  } as never);
+    headers: { "Cache-Control": "no-store", ...extraHeaders },
+  });
 }
