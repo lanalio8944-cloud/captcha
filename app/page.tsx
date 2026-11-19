@@ -33,27 +33,21 @@ export default function HomePage() {
         </div>
 
         <h1 id="page-title">Satu langkah lagi.</h1>
-        <p className="intro">
-          Selesaikan verifikasi singkat di bawah ini untuk melanjutkan dengan aman.
-        </p>
+        <p className="intro">Selesaikan verifikasi singkat di bawah ini untuk melanjutkan dengan aman.</p>
 
         {!destination && (
-          <p className="setup-notice" role="status">
-            Layanan belum siap. Silakan coba lagi nanti.
-          </p>
+          <p className="setup-notice" role="status">Layanan belum siap. Silakan coba lagi nanti.</p>
         )}
 
         {siteKey && destination ? (
-          <RecaptchaGate siteKey={siteKey} disabled={!destination} />
+          <RecaptchaGate siteKey={siteKey} />
         ) : !siteKey ? (
-          <p className="setup-notice" role="status">
-            Verifikasi belum tersedia saat ini. Silakan coba lagi nanti.
-          </p>
+          <p className="setup-notice" role="status">Verifikasi belum tersedia saat ini. Silakan coba lagi nanti.</p>
         ) : null}
 
         <div className="card-footer">
           <span className="footer-lock" aria-hidden="true">
-            <svg viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.6" stroke="currentColor" strokeWidth="1.3"/><path d="M5.2 7V4.8a2.8 2.8 0 0 1 5.6 0V7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+            <svg viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.6" stroke="currentColor" strokeWidth="1.3"/><path d="M5.2 7V4.8a2.8 2.8 0 0 1 5.6 0V7" stroke="currentColor" strokeWidth="1.3"/></svg>
           </span>
           <span>Verifikasi aman · Privasi Anda tetap terlindungi</span>
         </div>
