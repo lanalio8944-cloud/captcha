@@ -23,18 +23,9 @@ declare global {
   }
 }
 
-type Props = { siteKey: string; disabled?: boolean };
+type Props = { siteKey: string; disabled?: boolean; destinationId?: string };
 
-const adUnitMarkup = `<!-- BEGIN AADS AD UNIT 2462330 -->
-
-<div id="frame" style="width: 100%;margin: auto;position: relative; z-index: 99998;">
-          <iframe data-aa='2462330' src='//acceptable.a-ads.com/2462330/?size=Adaptive&background_color=E5F2EB&title_color=176B50&title_hover_color=23966D&text_color=35443D&link_color=16845E&link_hover_color=105B42'
-                            style='border:0; padding:0; width:70%; height:auto; overflow:hidden;display: block;margin: auto'></iframe>
-        </div>
-
-<!-- END AADS AD UNIT 2462330 -->`;
-
-export default function RecaptchaGate({ siteKey, disabled = false }: Props) {
+export default function RecaptchaGate({ siteKey, disabled = false, destinationId }: Props) {
   const widgetContainer = useRef<HTMLDivElement>(null);
   const widgetId = useRef<number | null>(null);
   const [scriptReady, setScriptReady] = useState(false);
@@ -80,13 +71,13 @@ export default function RecaptchaGate({ siteKey, disabled = false }: Props) {
             setVerified(false);
             setWidgetReady(false);
             setScriptError(true);
-            setMessage("Widget verifikasi tidak dapat dimuat. Silakan muat ulang halaman. Jika masalah berulang, periksa Site Key reCAPTCHA v2 Checkbox dan hostname yang terdaftar.");
+            setMessage("Widget verifikasi tidak dapat dimuat. Silakan muat ulang halaman.");
           },
         });
         setWidgetReady(true);
       } catch {
         setScriptError(true);
-        setMessage("Widget verifikasi tidak dapat dimulai. Silakan muat ulang halaman. Jika masalah berulang, periksa Site Key reCAPTCHA v2 Checkbox dan hostname yang terdaftar.");
+        setMessage("Widget verifikasi tidak dapat dimulai. Silakan muat ulang halaman.");
       }
     });
 
@@ -102,7 +93,7 @@ export default function RecaptchaGate({ siteKey, disabled = false }: Props) {
       const response = await fetch("/api/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: captchaToken }),
+        body: JSON.stringify({ token: captchaToken, destinationId: destinationId ?? null }),
         cache: "no-store",
       });
       const data = await response.json() as { success?: boolean; error?: string };
@@ -156,14 +147,9 @@ export default function RecaptchaGate({ siteKey, disabled = false }: Props) {
         </button>
       )}
 
-      <section className="ad-placement" aria-label="Iklan">
-        <span className="ad-label">IKLAN</span>
-        <div dangerouslySetInnerHTML={{ __html: adUnitMarkup }} />
-      </section>
-
       {message && <p className={`form-message${verified ? " success-message" : ""}`} role="status" aria-live="polite">{message}</p>}
       {scriptError && !verified && <>
-        <p className="form-hint">Jika pemuatan pertama gagal, muat ulang halaman. Jika pesan jenis kunci tidak valid tetap muncul, buat atau gunakan key reCAPTCHA v2 Checkbox dan daftarkan hostname situs ini di Google.</p>
+        <p className="form-hint">Jika pemuatan pertama gagal, muat ulang halaman.</p>
         <button className="reload-button" type="button" onClick={reloadPage}>Muat ulang halaman</button>
       </>}
 

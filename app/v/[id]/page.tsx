@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const destination = getDestinationById(id);
-  if (!destination) return { title: "Tautan tidak ditemukan" };
+  if (!destination) return { title: "Tautan tidak ditemukan", robots: { index: false, follow: false } };
 
   return {
     title: `Verifikasi Keamanan | ${destination.name}`,
@@ -46,11 +46,7 @@ export default async function DestinationVerificationPage({ params }: { params: 
       </header>
 
       <section className="verification-card" aria-labelledby="page-title">
-        <div className="card-kicker">
-          <span className="kicker-line" />
-          <span>VERIFIKASI KEAMANAN</span>
-        </div>
-
+        <div className="card-kicker"><span className="kicker-line" /><span>VERIFIKASI KEAMANAN</span></div>
         <h1 id="page-title">Satu langkah lagi.</h1>
         <p className="intro">Selesaikan verifikasi singkat sebelum melanjutkan ke situs tujuan.</p>
         <p className="destination-preview">

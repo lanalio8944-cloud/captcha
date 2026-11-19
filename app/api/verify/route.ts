@@ -3,18 +3,21 @@ import { z } from "zod";
 
 import {
   createRedirectSession,
+  getDestinationById,
   isSameOrigin,
   sessionCookieOptions,
 } from "@/lib/security";
 
 export const runtime = "nodejs";
 
-const schema = z.object({ token: z.string().min(1).max(8192) }).strict();
+const schema = z.object({
+  token: z.string().min(1).max(8192),
+  destinationId: z.string().regex(/^[-a-zA-Z0-9_]+$/).nullable().optional(),
+}).strict();
 
 type RecaptchaResponse = {
   success?: boolean;
   hostname?: string;
-  challenge_ts?: string;
   "error-codes"?: string[];
 };
 
@@ -42,7 +45,12 @@ export async function POST(request: Request) {
 
   try {
     const body = schema.safeParse(await request.json());
-    if (!body.success) return json({ error: "Token CAPTCHA tidak valid." }, 400);
+    if (!body.success) return json({ error: "Permintaan tidak valid." }, 400);
+
+    const destinationId = body.data.destinationId ?? null;
+    if (destinationId && !getDestinationById(destinationId)) {
+      return json({ error: "Tautan tujuan tidak valid." }, 404);
+    }
 
     const googleResponse = await fetch("https://www.google.com/recaptcha/api/siteverify", {
       method: "POST",
@@ -64,7 +72,7 @@ export async function POST(request: Request) {
     const response = NextResponse.json({ success: true }, {
       headers: { "Cache-Control": "no-store" },
     });
-    response.cookies.set("redirect_session", createRedirectSession(), sessionCookieOptions);
+    response.cookies.set("redirect_session", createRedirectSession(destinationId), sessionCookieOptions);
     return response;
   } catch {
     return json({ error: "Verifikasi CAPTCHA tidak dapat diselesaikan. Silakan coba lagi." }, 503);
@@ -76,8 +84,8 @@ export async function GET() {
 }
 
 function json(body: unknown, status: number, extraHeaders?: Record<string, string>) {
-  return NextResponse.json(body, {
+  return NextResponse.json({
+    body,
     status,
-    headers: { "Cache-Control": "no-store", ...extraHeaders },
-  });
+  } as never);
 }
