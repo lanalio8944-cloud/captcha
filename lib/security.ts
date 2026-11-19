@@ -6,7 +6,7 @@ import destinationsData from "@/config/destinations.json";
 const SESSION_TTL_SECONDS = 120;
 export const SESSION_COOKIE = "redirect_session";
 
-type SessionPayload = {
+export type SessionPayload = {
   type: "redirect";
   exp: number;
   nonce: string;
@@ -61,18 +61,25 @@ export function createRedirectSession(destinationId: string | null = null): stri
 }
 
 export function getRedirectSession(token: string): SessionPayload | null {
-  const payload = readSignedPayload<SessionPayload>(token);
+  const payload = readSignedPayload<Partial<SessionPayload>>(token);
   if (
     !payload || payload.type !== "redirect" ||
-    !Number.isInteger(payload.exp) || payload.exp <= Math.floor(Date.now() / 1000) ||
+    !Number.isInteger(payload.exp) || (payload.exp as number) <= Math.floor(Date.now() / 1000) ||
     typeof payload.nonce !== "string"
   ) return null;
 
-  if (payload.destinationId !== null &&
-      (typeof payload.destinationId !== "string" || !/^[-a-zA-Z0-9_]+$/.test(payload.destinationId))) {
-    return null;
+  if (payload.destinationId !== undefined && payload.destinationId !== null) {
+    if (typeof payload.destinationId !== "string" || !/^[-a-zA-Z0-9_]+$/.test(payload.destinationId)) {
+      return null;
+    }
   }
-  return payload;
+
+  return {
+    type: "redirect",
+    exp: payload.exp as number,
+    nonce: payload.nonce,
+    destinationId: payload.destinationId ?? null,
+  };
 }
 
 export function verifyRedirectSession(token: string): boolean {
@@ -82,10 +89,13 @@ export function verifyRedirectSession(token: string): boolean {
 function validateDestination(destination: { name?: unknown; url?: unknown }): Destination | null {
   if (typeof destination.name !== "string" || typeof destination.url !== "string") return null;
 
+  const name = destination.name.trim();
+  if (!name) return null;
+
   try {
     const url = new URL(destination.url);
     if (url.protocol !== "https:" || url.username || url.password) return null;
-    return { name: destination.name.trim(), url: url.toString() };
+    return { name, url: url.toString() };
   } catch {
     return null;
   }
