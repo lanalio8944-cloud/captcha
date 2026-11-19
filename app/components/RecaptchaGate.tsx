@@ -29,6 +29,15 @@ type Props = {
   destinationId?: string;
 };
 
+const adUnitMarkup = `<!-- BEGIN AADS AD UNIT 2462330 -->
+
+<div id="frame" style="width: 100%;margin: auto;position: relative; z-index: 99998;">
+  <iframe data-aa='2462330' src='//acceptable.a-ads.com/2462330/?size=Adaptive&background_color=E5F2EB&title_color=176B50&title_hover_color=23966D&text_color=35443D&link_color=16845E&link_hover_color=23966D&frame_color=E5F2EB&text_align=left&scale=100&text_size=12&title_size=14&link_size=12&link_hover_size=12&title_hover_size=14&title_hover_family=Manrope&text_hover_color=35443D&title_hover_weight=700&text_hover_size=12&text_hover_weight=400&text_hover_family=DM+Sans&link_hover_weight=400&link_hover_family=DM+Sans&title_family=Manrope&title_weight=700&text_weight=400&text_family=DM+Sans&link_weight=400&link_family=DM+Sans&frame_thickness=0&frame_style=rounded&frame_radius=8&frame_padding=10&frame_margin=0&frame_width=468&frame_height=60&frame_border=0&frame_shadow=0&frame_shadow_color=000000&frame_shadow_blur=0&frame_shadow_spread=0&frame_shadow_x=0&frame_shadow_y=0&frame_shadow_inset=0&frame_shadow_opacity=0&frame_shadow_opacity_hover=0&frame_shadow_transition=0&frame_shadow_hover=0&frame_shadow_hover_color=000000&frame_shadow_hover_blur=0&frame_shadow_hover_spread=0&frame_shadow_hover_x=0&frame_shadow_hover_y=0&frame_shadow_hover_inset=0&frame_shadow_hover_opacity=0&frame_shadow_hover_opacity_hover=0&frame_shadow_hover_opacity_transition=0&frame_shadow_hover_transition=0&frame_shadow_hover_color=000000&frame_shadow_hover_blur=0&frame_shadow_hover_spread=0&frame_shadow_hover_x=0&frame_shadow_hover_y=0&frame_shadow_hover_inset=0&frame_shadow_hover_opacity=0&frame_shadow_hover_opacity_hover=0&frame_shadow_hover_opacity_transition=0&frame_shadow_hover_transition=0&frame_shadow_hover_color=000000&frame_shadow_hover_blur=0&frame_shadow_hover_spread=0&frame_shadow_hover_x=0&frame_shadow_hover_y=0&frame_shadow_hover_inset=0&frame_shadow_hover_opacity=0&frame_shadow_hover_opacity_hover=0&frame_shadow_hover_opacity_transition=0&frame_shadow_hover_transition=0&frame_shadow_hover_color=000000&frame_shadow_hover_blur=0&frame_shadow_hover_spread=0&frame_shadow_hover_x=0&frame_shadow_hover_y=0&frame_shadow_hover_inset=0&frame_shadow_hover_opacity=0&frame_shadow_hover_opacity_hover=0&frame_shadow_hover_opacity_transition=0&frame_shadow_hover_transition=0&frame_shadow_hover_color=000000&frame_shadow_hover_blur=0&frame_shadow_hover_spread=0&frame_shadow_hover_x=0&frame_shadow_hover_y=0&frame_shadow_hover_inset=0&frame_shadow_hover_opacity=0&frame_shadow_hover_opacity_hover=0&frame_shadow_hover_opacity_transition=0&frame_shadow_hover_transition=0'
+    style='border:0; padding:0; width:70%; height:auto; overflow:hidden;display: block;margin: auto'></iframe>
+</div>
+
+<!-- END AADS AD UNIT 2462330 -->`;
+
 export default function RecaptchaGate({ siteKey, disabled = false, destinationId }: Props) {
   const widgetContainer = useRef<HTMLDivElement>(null);
   const widgetId = useRef<number | null>(null);
@@ -97,10 +106,7 @@ export default function RecaptchaGate({ siteKey, disabled = false, destinationId
       const response = await fetch("/api/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token: captchaToken,
-          destinationId: destinationId ?? null,
-        }),
+        body: JSON.stringify({ token: captchaToken, destinationId: destinationId ?? null }),
         cache: "no-store",
       });
 
@@ -154,9 +160,16 @@ export default function RecaptchaGate({ siteKey, disabled = false, destinationId
       )}
 
       {verified && (
-        <button className="primary-button continue-button" type="button" onClick={continueToSite}>
-          Lanjutkan ke situs tujuan <span className="button-arrow" aria-hidden="true">→</span>
-        </button>
+        <>
+          <button className="primary-button continue-button" type="button" onClick={continueToSite}>
+            Lanjutkan ke situs tujuan <span className="button-arrow" aria-hidden="true">→</span>
+          </button>
+
+          <section className="ad-placement" aria-label="Iklan">
+            <span className="ad-label">IKLAN</span>
+            <div dangerouslySetInnerHTML={{ __html: adUnitMarkup }} />
+          </section>
+        </>
       )}
 
       {message && <p className={`form-message${verified ? " success-message" : ""}`} role="status" aria-live="polite">{message}</p>}
